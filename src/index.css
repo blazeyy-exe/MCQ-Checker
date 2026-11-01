@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --color-ink: #1a2744;
+  --color-ink-soft: #2c3d63;
+  --color-paper: #f6f1e8;
+  --color-paper-dark: #ebe3d4;
+  --color-rule: #d7cdb8;
+  --color-stamp: #1f7a4d;
+  --color-mark-red: #c43c3c;
+  --color-mark-blue: #2b5ea7;
+  --color-mark-orange: #d97706;
+  --color-cream: #fbf8f2;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+.paper-grain {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(rgba(26, 39, 68, 0.035) 0.6px, transparent 0.6px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 40%);
+  background-size: 7px 7px, 100% 100%;
+}
+
+.scan-cutout {
+  box-shadow: 0 0 0 9999px rgba(10, 16, 32, 0.45);
+}
