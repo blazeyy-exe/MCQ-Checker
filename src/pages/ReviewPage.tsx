@@ -34,15 +34,15 @@ export function ReviewPage() {
   return (
     <div>
       <TopBrand />
-      <h2 className="font-serif text-3xl">Recognition review</h2>
-      <p className="mt-2 max-w-2xl text-ink/65">
+      <h2 className="font-extrabold tracking-[-0.03em] text-3xl">Recognition review</h2>
+      <p className="mt-2 max-w-2xl text-slate">
         Use this only when automatic reading is unsure. Confirming the layout makes the next papers from this exam faster and more stable.
       </p>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <img src={result.warpedDataUrl} alt="Corrected paper" className="rounded-3xl border border-rule" />
         <div className="rounded-3xl border border-rule bg-white p-4">
-          <h3 className="font-serif text-xl">Questions needing help</h3>
+          <h3 className="font-extrabold tracking-[-0.03em] text-xl">Questions needing help</h3>
           {uncertain.length === 0 ? (
             <p className="mt-3 text-sm text-stamp">No uncertain questions on this paper.</p>
           ) : (
@@ -70,8 +70,8 @@ export function ReviewPage() {
       </div>
 
       <section className="mt-8 rounded-3xl border border-rule bg-white p-4">
-        <h3 className="font-serif text-xl">OCR text</h3>
-        <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap text-xs text-ink/70">
+        <h3 className="font-extrabold tracking-[-0.03em] text-xl">OCR text</h3>
+        <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap text-xs text-slate">
           {result.ocrText || "OCR was skipped because a saved layout was reused."}
         </pre>
       </section>

@@ -63,8 +63,8 @@ export function LabPage() {
   return (
     <div>
       <TopBrand />
-      <h2 className="font-serif text-3xl">Recognition lab</h2>
-      <p className="mt-2 max-w-2xl text-ink/65">
+      <h2 className="font-extrabold tracking-[-0.03em] text-3xl">Recognition lab</h2>
+      <p className="mt-2 max-w-2xl text-slate">
         These generated papers have known answers. Use them to see where detection succeeds or needs layout confirmation. Figures here are from the run you just performed, not claimed product accuracy.
       </p>
       <Link to="/lab/debug" className="mt-4 inline-block rounded-full border border-rule px-4 py-2 text-sm">
@@ -109,10 +109,10 @@ export function LabPage() {
           <p className="font-semibold">{trial.name}</p>
           <p className="mt-2 text-sm">Expected: {trial.expected}</p>
           <p className="text-sm">Detected: {trial.detected}</p>
-          <p className="mt-2 font-serif text-3xl">
+          <p className="mt-2 font-extrabold tracking-[-0.03em] text-3xl">
             {trial.matched}/{trial.total}
           </p>
-          <p className="text-sm text-ink/55">{Math.round(trial.ms)} ms</p>
+          <p className="text-sm text-slate">{Math.round(trial.ms)} ms</p>
           {trial.annotated && <img src={trial.annotated} alt="Annotated lab paper" className="mt-4 rounded-2xl" />}
         </div>
       )}

@@ -18,21 +18,21 @@ export function HistoryPage() {
   return (
     <div>
       <TopBrand />
-      <h2 className="font-serif text-3xl">History</h2>
-      <p className="mt-2 text-ink/60">Papers stay on this device. Nothing is sent to a server.</p>
+      <h2 className="font-extrabold tracking-[-0.03em] text-3xl">History</h2>
+      <p className="mt-2 text-slate">Papers stay on this device. Nothing is sent to a server.</p>
       {results.length === 0 ? (
-        <p className="mt-8 rounded-3xl border border-dashed border-rule p-8 text-ink/55">No graded papers yet.</p>
+        <p className="mt-8 rounded-3xl border border-dashed border-rule p-8 text-slate">No graded papers yet.</p>
       ) : (
         <div className="mt-6 grid gap-3">
           {results.map((result) => (
             <div key={result.id} className="flex items-center justify-between gap-3 rounded-2xl border border-rule bg-white px-4 py-3">
               <Link to={`/results/${result.id}`} className="min-w-0 flex-1">
                 <p className="font-semibold">{result.studentLabel || "Unnamed student"}</p>
-                <p className="text-sm text-ink/55">
+                <p className="text-sm text-slate">
                   {new Date(result.createdAt).toLocaleString()} · {result.verified ? "verified" : "needs review"}
                 </p>
               </Link>
-              <p className="font-serif text-2xl">
+              <p className="font-extrabold tracking-[-0.03em] text-2xl">
                 {result.score}/{result.total}
               </p>
               <button

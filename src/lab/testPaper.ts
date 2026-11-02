@@ -39,12 +39,12 @@ export function generateTestPaper(options: {
   const ctx = getContext(canvas);
   ctx.fillStyle = "#f7f4ec";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#1a2744";
+  ctx.fillStyle = "#0F1535";
   ctx.font = "700 34px Georgia";
   ctx.fillText("Mid-Term Examination", 64, 70);
   ctx.font = "16px Georgia";
   ctx.fillText("Science  ·  Class 8  ·  Time: 45 minutes", 64, 98);
-  ctx.strokeStyle = "#d7cdb8";
+  ctx.strokeStyle = "rgba(15, 21, 53, 0.2)";
   ctx.beginPath();
   ctx.moveTo(64, 118);
   ctx.lineTo(canvas.width - 64, 118);
@@ -60,7 +60,7 @@ export function generateTestPaper(options: {
     const row = i % perCol;
     const x = 64 + col * colWidth;
     const y = 150 + row * (layout === "two-column" ? 260 : 132);
-    ctx.fillStyle = "#1a2744";
+    ctx.fillStyle = "#0F1535";
     ctx.font = "600 18px Georgia";
     ctx.fillText(`${i + 1}. ${item[0]}`, x, y);
     const chosen = answers[i];
@@ -69,12 +69,12 @@ export function generateTestPaper(options: {
       const ox = layout === "two-column" ? x : x + o * 230;
       const oy = layout === "two-column" ? y + 28 + o * 28 : y + 36;
       ctx.font = "16px Georgia";
-      ctx.fillStyle = "#1a2744";
+      ctx.fillStyle = "#0F1535";
       const text = `${label}. ${item[o + 1]}`;
       ctx.fillText(text, ox, oy);
       const selected = mark === "multiple" ? label === "A" || label === "C" : label === chosen;
       if (!selected || mark === "blank") continue;
-      ctx.strokeStyle = "#1a2744";
+      ctx.strokeStyle = "#0F1535";
       ctx.lineWidth = 2.4;
       if (mark === "circle" || mark === "multiple") {
         ctx.beginPath();
