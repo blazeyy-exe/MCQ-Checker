@@ -1,8 +1,8 @@
-# MCQ Checker
+# Tickd - MCQ Checker
 
 **A camera-powered examination grading tool built with computer vision.**
 
-MCQ Checker helps teachers check physical multiple-choice examination papers using a camera. It detects student answers, compares them against a confirmed answer key, and displays grading results directly over the paper through a live camera overlay.
+Tickd helps teachers check physical multiple-choice examination papers using a camera. It detects student answers then compares them against a confirmed answer key and displays grading results directly over the paper through a live camera overlay.
 
 The goal is to make MCQ checking faster without requiring specialized OMR sheets or scanning equipment.
 
