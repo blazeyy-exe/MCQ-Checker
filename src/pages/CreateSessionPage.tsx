@@ -123,8 +123,8 @@ export function CreateSessionPage() {
   return (
     <div>
       <TopBrand />
-      <h2 className="font-serif text-3xl">Answer key</h2>
-      <p className="mt-2 max-w-2xl text-ink/65">
+      <h2 className="font-extrabold tracking-[-0.03em] text-3xl">Create an answer key</h2>
+      <p className="mt-2 max-w-2xl text-slate">
         Teachers keep their existing papers. Enter the correct answers, or upload a solved copy and confirm what was detected.
       </p>
 
@@ -145,7 +145,9 @@ export function CreateSessionPage() {
 
       {tab === "upload" && (
         <div className="mt-6 rounded-3xl border border-dashed border-rule bg-white p-5">
+          <label htmlFor="answer-key-upload" className="mb-2 block text-sm font-bold">Upload a solved examination paper</label>
           <input
+            id="answer-key-upload"
             type="file"
             accept="image/jpeg,image/png,image/jpg,application/pdf"
             onChange={(e) => {
@@ -153,7 +155,7 @@ export function CreateSessionPage() {
               if (file) void onUpload(file);
             }}
           />
-          <p className="mt-2 text-sm text-ink/55">JPG, PNG or PDF. Detection is confirmed before it is trusted.</p>
+          <p className="mt-2 text-sm text-slate">JPG, PNG or PDF. Detected answers always need teacher confirmation.</p>
           {busy && <p className="mt-3 text-sm">Reading the paper…</p>}
           {preview && <img src={preview} alt="Uploaded paper" className="mt-4 max-h-80 rounded-2xl" />}
         </div>
@@ -164,10 +166,10 @@ export function CreateSessionPage() {
           {w}
         </p>
       ))}
-      {error && <p className="mt-3 text-sm text-mark-red">{error}</p>}
+      {error && <p className="status-pill status-incorrect mt-3 text-sm" role="alert">× {error}</p>}
 
       <div className="mt-8 rounded-3xl border border-rule bg-white p-5">
-        <h3 className="mb-4 font-serif text-2xl">Confirm answers</h3>
+        <h3 className="mb-4 font-extrabold tracking-[-0.03em] text-2xl">Confirm answers</h3>
         <AnswerKeyEditor items={items} onChange={updateItems} />
       </div>
 
@@ -192,7 +194,7 @@ export function CreateSessionPage() {
           type="button"
           onClick={() => void save()}
           disabled={!answersComplete || !confirmed || saving}
-          className="rounded-full bg-ink px-5 py-3 text-paper disabled:opacity-50"
+          className="primary-button primary-button--large px-5 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save and open scanner"}
         </button>
@@ -213,7 +215,7 @@ export function CreateSessionPage() {
               updatedAt: Date.now(),
             })
           }
-          className="rounded-full border border-rule px-5 py-3"
+          className="secondary-button px-5"
         >
           Download optional OMR sheet
         </button>
@@ -227,7 +229,7 @@ function Tab({ active, onClick, children }: { active: boolean; onClick: () => vo
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-4 py-2 text-sm ${active ? "bg-ink text-paper" : "bg-paper-dark text-ink/70"}`}
+      className={`min-h-11 rounded-full px-4 py-2 text-sm font-bold ${active ? "bg-indigo text-white" : "bg-white text-slate"}`}
     >
       {children}
     </button>
@@ -247,12 +249,12 @@ function Field({
 }) {
   return (
     <label className="text-sm">
-      <span className="mb-1 block text-ink/60">{label}</span>
+      <span className="mb-1 block font-semibold text-slate">{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-rule bg-white px-3 py-2"
+        className="w-full rounded-2xl border border-rule bg-white px-3 py-2 text-navy"
       />
     </label>
   );
