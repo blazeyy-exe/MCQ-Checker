@@ -60,53 +60,70 @@ export function ResultsPage() {
       <TopBrand />
       <ScoreHero result={result} />
       <div className="mt-4 flex flex-wrap gap-2">
-        <Link to={`/scan?session=${result.sessionId}`} className="rounded-full bg-ink px-4 py-2 text-paper">
+        <Link to={`/scan?session=${result.sessionId}`} className="primary-button inline-flex items-center px-4">
           Scan next student
         </Link>
         <button
           type="button"
           onClick={() => void exportResultPdf(result, examName)}
-          className="rounded-full border border-rule px-4 py-2"
+          className="secondary-button px-4"
         >
           Export PDF
         </button>
         <button
           type="button"
           onClick={() => downloadDataUrl(result.annotatedDataUrl, "annotated-paper.jpg")}
-          className="rounded-full border border-rule px-4 py-2"
+          className="secondary-button px-4"
         >
           Download image
         </button>
-        <Link to={`/review/${result.id}`} className="rounded-full border border-rule px-4 py-2">
+        <Link to={`/review/${result.id}`} className="secondary-button inline-flex items-center px-4">
           Recognition review
         </Link>
-        <button type="button" onClick={() => void confirmLayout()} className="rounded-full border border-rule px-4 py-2">
+        <button type="button" onClick={() => void confirmLayout()} className="secondary-button px-4">
           Reuse this layout
         </button>
       </div>
 
       {result.warnings.map((w) => (
-        <p key={w} className="mt-3 text-sm text-mark-orange">
+        <p key={w} className="review-callout mt-3 p-3 text-sm font-semibold">
           {w}
         </p>
       ))}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div>
-          <h3 className="mb-2 font-serif text-2xl">Original</h3>
+          <h3 className="mb-2 font-extrabold tracking-[-0.03em] text-2xl">Original</h3>
           <AnnotatedPaper src={result.originalDataUrl} alt="Original paper" />
         </div>
         <div>
-          <h3 className="mb-2 font-serif text-2xl">Marked paper</h3>
+          <h3 className="mb-2 font-extrabold tracking-[-0.03em] text-2xl">Marked paper</h3>
           <AnnotatedPaper src={result.annotatedDataUrl} alt="Annotated paper" />
         </div>
       </div>
 
-      <h3 className="mt-8 font-serif text-2xl">Question by question</h3>
-      <p className="mb-3 mt-1 text-sm text-ink/60">Correct a detection and the score recalculates immediately.</p>
+      {result.questions.some((question) => ["multiple", "uncertain", "missing"].includes(question.status)) && (
+        <section className="review-callout mt-6 p-4">
+          <h3 className="font-bold">Needs your review</h3>
+          <p className="mt-1 text-sm">These ambiguous or multiple marks are not graded until you decide.</p>
+          <ul className="mt-3 space-y-2">
+            {result.questions
+              .filter((question) => ["multiple", "uncertain", "missing"].includes(question.status))
+              .map((question) => (
+                <li key={question.number} className="flex items-center justify-between rounded-xl bg-white/70 px-3 py-2 text-sm">
+                  <span className="font-bold">Question {question.number}</span>
+                  <span>{question.status === "multiple" ? "Multiple marks" : question.status === "missing" ? "Not recognized" : "Uncertain mark"}</span>
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
+
+      <h3 className="mt-8 font-extrabold tracking-[-0.03em] text-2xl">Question by question</h3>
+      <p className="mb-3 mt-1 text-sm text-slate">Correct a detection and the score recalculates immediately.</p>
       <QuestionBreakdown result={result} onOverride={(n, v) => void override(n, v)} />
-      <p className="mt-4 text-xs text-ink/45">Processed in {Math.round(result.processingMs)} ms on this device. Nothing was uploaded.</p>
-      <button type="button" className="mt-4 text-sm text-ink/50" onClick={() => navigate("/history")}>
+      <p className="mt-4 text-xs text-slate">Processed in {Math.round(result.processingMs)} ms on this device. Nothing was uploaded.</p>
+      <button type="button" className="mt-4 text-sm text-slate" onClick={() => navigate("/history")}>
         View history
       </button>
     </div>

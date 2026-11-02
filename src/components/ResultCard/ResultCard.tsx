@@ -9,26 +9,32 @@ const STATUS_LABEL: Record<string, string> = {
   uncertain: "Uncertain",
   missing: "Not found",
 };
+const STATUS_SYMBOL: Record<string, string> = {
+  correct: "✓",
+  incorrect: "×",
+  unanswered: "—",
+  multiple: "?",
+  uncertain: "?",
+  missing: "?",
+};
 
 export function ScoreHero({ result }: { result: GradingResult }) {
   return (
-    <section className="paper-grain rounded-3xl border border-rule px-6 py-7">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/50">
+    <section className="rounded-3xl bg-indigo px-6 py-7 text-white">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-white">
         {result.verified ? "Verified score" : "Needs review"}
       </p>
-      <p className="mt-2 font-serif text-6xl leading-none">
-        {result.score} <span className="text-3xl text-ink/40">/ {result.total}</span>
+      <p className="mt-2 text-5xl font-extrabold leading-none tracking-[-0.03em]">
+        {result.score} <span className="text-3xl text-white">/ {result.total}</span>
       </p>
       <p className="mt-3 text-lg">{result.percentage}% score</p>
       <div className="mt-5 flex flex-wrap gap-2 text-sm">
-        <Pill>{result.correct} correct</Pill>
-        <Pill>{result.incorrect} incorrect</Pill>
-        <Pill>{result.unanswered} unanswered</Pill>
-        {result.multiple > 0 && <Pill>{result.multiple} multiple</Pill>}
-        {result.uncertain > 0 && <Pill>{result.uncertain} uncertain</Pill>}
+        <Pill className="status-correct">✓ {result.correct} correct</Pill>
+        <Pill className="status-incorrect">× {result.incorrect} incorrect</Pill>
+        <Pill className="status-unanswered">— {result.unanswered} unanswered</Pill>
       </div>
       {!result.verified && (
-        <p className="mt-4 text-sm text-mark-red">
+        <p className="review-callout mt-4 p-4 text-sm font-semibold">
           Some questions are uncertain. Do not treat this as a final official mark until they are reviewed.
         </p>
       )}
@@ -36,8 +42,8 @@ export function ScoreHero({ result }: { result: GradingResult }) {
   );
 }
 
-function Pill({ children }: { children: ReactNode }) {
-  return <span className="rounded-full bg-white/80 px-3 py-1">{children}</span>;
+function Pill({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <span className={`status-pill ${className}`}>{children}</span>;
 }
 
 export function QuestionBreakdown({
@@ -52,20 +58,11 @@ export function QuestionBreakdown({
       {result.questions.map((q) => (
         <div key={q.number} className="flex flex-wrap items-center gap-3 px-4 py-3">
           <div className="w-12 font-semibold">Q{q.number}</div>
-          <div className="flex-1 text-sm text-ink/70">
+          <div className="flex-1 text-sm text-slate">
             Key {q.keyAnswer ?? "—"} · Detected {q.detectedAnswers.join("/") || "—"}
           </div>
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-              q.status === "correct"
-                ? "bg-green-100 text-stamp"
-                : q.status === "incorrect"
-                  ? "bg-red-100 text-mark-red"
-                  : q.status === "unanswered" || q.status === "missing"
-                    ? "bg-blue-100 text-mark-blue"
-                    : "bg-orange-100 text-mark-orange"
-            }`}
-          >
+          <span className={`status-pill status-${q.status === "correct" ? "correct" : q.status === "incorrect" ? "incorrect" : q.status === "unanswered" ? "unanswered" : "review"}`}>
+            <span aria-hidden="true">{STATUS_SYMBOL[q.status]}</span>
             {STATUS_LABEL[q.status]}
           </span>
           {onOverride && (

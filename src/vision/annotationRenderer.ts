@@ -3,12 +3,12 @@ import { createCanvas, getContext, loadImageElement } from "../lib/image";
 import { inflateRect } from "../lib/geometry";
 
 const COLORS: Record<string, string> = {
-  correct: "#1f7a4d",
-  incorrect: "#c43c3c",
-  unanswered: "#2b5ea7",
-  multiple: "#d97706",
-  uncertain: "#d97706",
-  missing: "#2b5ea7",
+  correct: "#16A34A",
+  incorrect: "#E5484D",
+  unanswered: "#1E90FF",
+  multiple: "#F59E0B",
+  uncertain: "#F59E0B",
+  missing: "#1E90FF",
 };
 
 function roundRect(
@@ -51,14 +51,14 @@ export async function renderAnnotatedPaper(
     if (q.status === "unanswered" || q.status === "missing") {
       const box = q.box.width ? q.box : { x: 24, y: 24 + q.number * 8, width: 80, height: 28 };
       ctx.strokeStyle = color;
-      ctx.fillStyle = "rgba(43, 94, 167, 0.12)";
+      ctx.fillStyle = "rgba(30, 144, 255, 0.22)";
       ctx.lineWidth = Math.max(3, img.width / 400);
       roundRect(ctx, box.x, box.y, Math.max(48, box.width * 0.22), Math.max(22, box.height * 0.18), 6);
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = color;
-      ctx.font = `700 ${Math.max(16, img.width / 52)}px "IBM Plex Sans", sans-serif`;
-      ctx.fillText(`Q${q.number} ?`, box.x + 8, box.y + Math.max(18, box.height * 0.14));
+      ctx.font = `700 ${Math.max(16, img.width / 52)}px "Plus Jakarta Sans", sans-serif`;
+      ctx.fillText(`${q.status === "unanswered" ? "—" : "?"} Q${q.number}`, box.x + 8, box.y + Math.max(18, box.height * 0.14));
       continue;
     }
 
@@ -76,7 +76,7 @@ export async function renderAnnotatedPaper(
       const keyBox = q.optionBoxes.find((o) => o.label === q.keyAnswer);
       if (keyBox) {
         ctx.setLineDash([8, 6]);
-        ctx.strokeStyle = "#1f7a4d";
+        ctx.strokeStyle = "#16A34A";
         ctx.lineWidth = Math.max(3, img.width / 360);
         const box = inflateRect(keyBox.box, 6, 4);
         roundRect(ctx, box.x, box.y, box.width, box.height, box.height / 2);
