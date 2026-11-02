@@ -66,12 +66,15 @@ export function RecognitionDebugPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mark-orange">Developer tool</p>
-          <h2 className="font-serif text-3xl">Recognition debug</h2>
+          <h2 className="font-extrabold tracking-[-0.03em] text-3xl">Recognition debug</h2>
         </div>
         <Link to="/lab" className="text-sm underline">Back to lab</Link>
       </div>
-      <p className="mt-2 max-w-3xl text-sm text-ink/65">
+      <p className="mt-2 max-w-3xl text-sm text-slate">
         Inspect one ordinary, single-column paper at a time. This tool is for diagnosis and labeled-case collection; one sample does not establish accuracy.
+      </p>
+      <p className="mt-2 max-w-3xl text-sm text-slate">
+        For live camera tracking and projected grading markers, open the <Link to="/scan" className="underline">scanner</Link> and enable “Tracking debug” over the preview.
       </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-rule bg-white p-4">
@@ -113,15 +116,15 @@ export function RecognitionDebugPage() {
               height={recognition.sourceHeight}
             />
             <div>
-              <h3 className="mb-2 font-serif text-xl">Perspective-corrected image and regions</h3>
+              <h3 className="mb-2 font-extrabold tracking-[-0.03em] text-xl">Perspective-corrected image and regions</h3>
               <div className="relative overflow-hidden rounded-2xl border border-rule bg-white">
                 <img src={recognition.warpedDataUrl} alt="Perspective-corrected examination paper" className="block h-auto w-full" />
                 <div className="pointer-events-none absolute inset-0">
                   {showWords && recognition.ocrWords.map((word, index) => (
-                    <Box key={`word-${index}`} box={word.bbox} width={recognition.pageWidth} height={recognition.pageHeight} color="#2563eb" />
+                    <Box key={`word-${index}`} box={word.bbox} width={recognition.pageWidth} height={recognition.pageHeight} color="var(--unanswered)" />
                   ))}
                   {showQuestions && recognition.questions.map((question) => (
-                    <Box key={`question-${question.number}`} box={question.box} width={recognition.pageWidth} height={recognition.pageHeight} color="#16a34a" label={`Q${question.number}`} />
+                    <Box key={`question-${question.number}`} box={question.box} width={recognition.pageWidth} height={recognition.pageHeight} color="var(--correct)" label={`Q${question.number}`} />
                   ))}
                   {showOptions && recognition.questions.flatMap((question) => question.options.map((option) => (
                     <Box
@@ -129,24 +132,24 @@ export function RecognitionDebugPage() {
                       box={option.labelBox ?? option.box}
                       width={recognition.pageWidth}
                       height={recognition.pageHeight}
-                      color={option.markScore >= SELECTED_CIRCLE_THRESHOLD ? "#dc2626" : "#d97706"}
+                      color={option.markScore >= SELECTED_CIRCLE_THRESHOLD ? "var(--incorrect)" : "var(--review)"}
                       label={`${question.number}:${option.label} ${option.markScore.toFixed(2)}`}
                     />
                   )))}
                 </div>
               </div>
-              <p className="mt-2 text-xs text-ink/55">Blue: OCR words · green: question · orange/red: option and circle score</p>
+              <p className="mt-2 text-xs text-slate">Blue: OCR words · green: question · orange/red: option and circle score</p>
             </div>
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
             <section className="rounded-2xl border border-rule bg-white p-4">
-              <h3 className="font-serif text-xl">OCR output</h3>
+              <h3 className="font-extrabold tracking-[-0.03em] text-xl">OCR output</h3>
               <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap text-xs">{recognition.ocrText || "No OCR text."}</pre>
-              <p className="mt-2 text-xs text-ink/55">{recognition.ocrWords.length} word boxes retained</p>
+              <p className="mt-2 text-xs text-slate">{recognition.ocrWords.length} word boxes retained</p>
             </section>
             <section className="rounded-2xl border border-rule bg-white p-4">
-              <h3 className="font-serif text-xl">Structured recognition</h3>
+              <h3 className="font-extrabold tracking-[-0.03em] text-xl">Structured recognition</h3>
               {recognition.questions.length === 0 ? (
                 <p className="mt-2 text-sm text-mark-orange">No question regions recognized.</p>
               ) : (
@@ -157,8 +160,8 @@ export function RecognitionDebugPage() {
                         Q{question.number}: {question.status} · {question.selected.join("+") || "no selection"}
                         {" · "}{question.confidence} confidence
                       </p>
-                      <p className="text-xs text-ink/65">{question.questionText || "Question text not read."}</p>
-                      <p className="text-xs text-ink/65">
+                      <p className="text-xs text-slate">{question.questionText || "Question text not read."}</p>
+                      <p className="text-xs text-slate">
                         Options: {question.options.map((option) => `${option.label}. ${option.text || "?"}`).join(" | ") || "none"}
                       </p>
                       {(question.uncertaintyReasons ?? []).map((reason) => (
@@ -180,8 +183,8 @@ export function RecognitionDebugPage() {
           </div>
 
           <section className="mt-5 rounded-2xl border border-rule bg-white p-4">
-            <h3 className="font-serif text-xl">Label this paper for evaluation</h3>
-            <p className="mt-1 text-xs text-ink/60">Enter every question as `number:answer`: `1:B, 2:blank, 3:A+C, 4:?`.</p>
+            <h3 className="font-extrabold tracking-[-0.03em] text-xl">Label this paper for evaluation</h3>
+            <p className="mt-1 text-xs text-slate">Enter every question as `number:answer`: `1:B, 2:blank, 3:A+C, 4:?`.</p>
             <textarea
               value={groundTruthInput}
               onChange={(event) => setGroundTruthInput(event.target.value)}
@@ -204,7 +207,7 @@ export function RecognitionDebugPage() {
                 <button type="button" onClick={downloadCase} className="mt-4 rounded-full bg-ink px-4 py-2 text-sm text-paper">
                   Download labeled evaluation case
                 </button>
-                <p className="mt-2 text-xs text-ink/55">
+                <p className="mt-2 text-xs text-slate">
                   One-paper metrics are diagnostic only. See evaluation/README.md for aggregate evaluation.
                 </p>
               </>
@@ -212,7 +215,7 @@ export function RecognitionDebugPage() {
           </section>
 
           <details className="mt-5 rounded-2xl border border-rule bg-white p-4">
-            <summary className="cursor-pointer font-serif text-lg">Raw structured recognition JSON</summary>
+            <summary className="cursor-pointer font-extrabold tracking-[-0.03em] text-lg">Raw structured recognition JSON</summary>
             <pre className="mt-3 max-h-96 overflow-auto text-xs">{JSON.stringify(recognition, null, 2)}</pre>
           </details>
         </>
@@ -236,7 +239,7 @@ function ImagePanel({
 }) {
   return (
     <div>
-      <h3 className="mb-2 font-serif text-xl">{title}</h3>
+      <h3 className="mb-2 font-extrabold tracking-[-0.03em] text-xl">{title}</h3>
       <div className="relative">
         <img src={src} alt={title} className="h-auto w-full rounded-2xl border border-rule" />
         {quad && width && height && (
@@ -244,13 +247,13 @@ function ImagePanel({
             <polygon
               points={[quad.tl, quad.tr, quad.br, quad.bl].map((point) => `${(point.x / width) * 100},${(point.y / height) * 100}`).join(" ")}
               fill="none"
-              stroke="#dc2626"
+              stroke="var(--incorrect)"
               strokeWidth="0.7"
             />
           </svg>
         )}
       </div>
-      {quad && <p className="mt-1 text-xs text-ink/55">Red outline: detected paper boundary</p>}
+      {quad && <p className="mt-1 text-xs text-slate">Red outline: detected paper boundary</p>}
     </div>
   );
 }
@@ -288,9 +291,9 @@ function Box({
 function Metric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="rounded-xl bg-paper p-3">
-      <p className="text-xs text-ink/60">{label}</p>
-      <p className="mt-1 font-serif text-2xl">{value}</p>
-      <p className="text-xs text-ink/50">{detail}</p>
+      <p className="text-xs text-slate">{label}</p>
+      <p className="mt-1 font-extrabold tracking-[-0.03em] text-2xl">{value}</p>
+      <p className="text-xs text-slate">{detail}</p>
     </div>
   );
 }
