@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { Camera, ClipboardList, History, House, ScanLine } from "lucide-react";
+import { TickdMark } from "./TickdMark";
 
 const links = [
   { to: "/", label: "Home", icon: House, end: true },
@@ -11,11 +12,11 @@ const links = [
 
 export function AppShell() {
   return (
-    <div className="min-h-dvh bg-cream text-ink">
+    <div className="min-h-dvh bg-paper text-ink">
       <div className="mx-auto flex min-h-dvh max-w-6xl flex-col px-4 pb-24 pt-6 md:pb-10">
         <Outlet />
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-rule/80 bg-paper/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-white md:hidden">
         <div className="grid grid-cols-5">
           {links.map((link) => (
             <NavLink
@@ -23,10 +24,10 @@ export function AppShell() {
               to={link.to}
               end={link.end}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 py-3 text-[11px] ${isActive ? "text-ink" : "text-ink/45"}`
+                `flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-[11px] ${isActive ? "text-indigo" : "text-ink-soft"}`
               }
             >
-              <link.icon size={18} />
+              <link.icon size={20} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
               {link.label}
             </NavLink>
           ))}
@@ -38,10 +39,15 @@ export function AppShell() {
 
 export function TopBrand() {
   return (
-    <div className="mb-8 flex items-end justify-between gap-4">
+    <div className="mb-8 flex items-center justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ink/50">Examination grading</p>
-        <h1 className="font-serif text-4xl font-medium tracking-tight text-ink md:text-5xl">MCQ Checker</h1>
+        <div className="flex items-center gap-3">
+          <TickdMark className="h-11 w-11 shrink-0" />
+          <div>
+            <p className="text-2xl font-extrabold leading-tight tracking-[-0.03em] text-navy">Tickd</p>
+            <p className="text-xs font-semibold text-slate">MCQ Checker</p>
+          </div>
+        </div>
       </div>
       <div className="hidden items-center gap-2 md:flex">
         {links.map((link) => (
@@ -50,7 +56,7 @@ export function TopBrand() {
             to={link.to}
             end={link.end}
             className={({ isActive }) =>
-              `rounded-full px-3 py-1.5 text-sm ${isActive ? "bg-ink text-paper" : "text-ink/60 hover:bg-paper-dark"}`
+              `min-h-11 rounded-full px-4 py-2 text-sm font-bold ${isActive ? "bg-indigo text-white" : "text-slate hover:bg-white"}`
             }
           >
             {link.label}

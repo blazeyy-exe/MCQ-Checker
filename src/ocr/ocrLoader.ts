@@ -1,4 +1,5 @@
-import { createWorker, PSM, type Worker } from "tesseract.js";
+import Tesseract from "tesseract.js/dist/tesseract.esm.min.js";
+import type { PSM, Worker } from "tesseract.js";
 import type { OcrWord } from "./questionParser";
 
 let workerPromise: Promise<Worker> | null = null;
@@ -6,13 +7,13 @@ let workerPromise: Promise<Worker> | null = null;
 export async function getOcrWorker(): Promise<Worker> {
   if (!workerPromise) {
     const pending = (async () => {
-      const worker = await createWorker("eng", 1, {
+      const worker = await Tesseract.createWorker("eng", 1, {
         workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",
         corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1/tesseract-core.wasm.js",
         langPath: "https://tessdata.projectnaptha.com/4.0.0",
       });
       await worker.setParameters({
-        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+        tessedit_pageseg_mode: "6" as PSM,
         preserve_interword_spaces: "1",
       });
       return worker;

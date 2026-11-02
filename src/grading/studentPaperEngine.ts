@@ -17,7 +17,8 @@ import {
   toGrayscale,
   warpQuadToImage,
 } from "../lib/image";
-import { dist, quadFromRect } from "../lib/geometry";
+import { quadFromRect } from "../lib/geometry";
+import { orientPaperQuad } from "../vision/arCoordinates";
 
 export interface ProcessPaperInput {
   source: HTMLCanvasElement | HTMLImageElement | ImageData;
@@ -61,12 +62,7 @@ export async function warpPaper(data: ImageData, allowFullFrame = false): Promis
   if (!quad || (!detection.found && !allowFullFrame)) {
     throw new Error(detection.message || "Could not find the examination paper.");
   }
-  const horizontalLength = (dist(quad.tl, quad.tr) + dist(quad.bl, quad.br)) / 2;
-  const verticalLength = (dist(quad.tl, quad.bl) + dist(quad.tr, quad.br)) / 2;
-  const orientedQuad =
-    horizontalLength > verticalLength
-      ? { tl: quad.tr, tr: quad.br, br: quad.bl, bl: quad.tl }
-      : quad;
+  const orientedQuad = orientPaperQuad(quad);
   const orientedSize = targetWarpSize(orientedQuad);
   const warped = warpQuadToImage(data, orientedQuad, orientedSize.width, orientedSize.height);
   const enhanced = enhanceContrast(warped);
@@ -197,5 +193,10 @@ export function debugFromRecognition(recognition: StudentPaperRecognition, extra
     questions: recognition.questions,
     issues: recognition.issues,
     timings: { processing: recognition.processingMs, ...extraTimings },
+    paperQuad: recognition.paperQuad,
+    sourceWidth: recognition.sourceWidth,
+    sourceHeight: recognition.sourceHeight,
+    pageWidth: recognition.pageWidth,
+    pageHeight: recognition.pageHeight,
   };
 }

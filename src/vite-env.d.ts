@@ -8,6 +8,19 @@ interface Window {
   cv?: OpenCV;
 }
 
+declare module "tesseract.js/dist/tesseract.esm.min.js" {
+  import type { Worker } from "tesseract.js";
+
+  const Tesseract: {
+    createWorker(
+      langs?: string | string[],
+      oem?: number,
+      options?: { workerPath?: string; corePath?: string; langPath?: string },
+    ): Promise<Worker>;
+  };
+  export default Tesseract;
+}
+
 type OpenCV = {
   Mat: new () => CvMat;
   MatVector: new () => { size: () => number; get: (i: number) => CvMat; delete: () => void };
@@ -23,6 +36,10 @@ type OpenCV = {
   CV_8UC1: number;
   CV_8UC4: number;
   CV_32FC2: number;
+  RANSAC: number;
+  TERM_CRITERIA_EPS: number;
+  TERM_CRITERIA_COUNT: number;
+  TermCriteria: new (type: number, maxCount: number, epsilon: number) => unknown;
   BORDER_DEFAULT: number;
   MORPH_RECT: number;
   MORPH_CLOSE: number;
@@ -59,6 +76,38 @@ type OpenCV = {
   ) => void;
   ADAPTIVE_THRESH_GAUSSIAN_C: number;
   morphologyEx: (src: CvMat, dst: CvMat, op: number, kernel: CvMat) => void;
+  goodFeaturesToTrack?: (
+    image: CvMat,
+    corners: CvMat,
+    maxCorners: number,
+    qualityLevel: number,
+    minDistance: number,
+    mask: CvMat | null,
+    blockSize: number,
+    useHarrisDetector: boolean,
+    k: number,
+  ) => void;
+  calcOpticalFlowPyrLK?: (
+    previous: CvMat,
+    current: CvMat,
+    previousPoints: CvMat,
+    nextPoints: CvMat,
+    status: CvMat,
+    error: CvMat,
+    window: { width: number; height: number },
+    maxLevel: number,
+    criteria: unknown,
+    flags: number,
+    minEigThreshold: number,
+  ) => void;
+  findHomography?: (
+    source: CvMat,
+    destination: CvMat,
+    method: number,
+    threshold: number,
+    mask: CvMat,
+  ) => CvMat;
+  perspectiveTransform?: (source: CvMat, destination: CvMat, transform: CvMat) => void;
   onRuntimeInitialized?: () => void;
   ready?: Promise<void>;
 };
@@ -69,6 +118,7 @@ type CvMat = {
   data: Uint8Array;
   data32F: Float32Array;
   data32S: Int32Array;
+  data64F: Float64Array;
   delete: () => void;
   clone: () => CvMat;
 };

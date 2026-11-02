@@ -209,6 +209,11 @@ export interface RecognitionDebug {
   questions: DetectedQuestion[];
   issues: RecognitionIssue[];
   timings: Record<string, number>;
+  paperQuad?: Quad;
+  sourceWidth: number;
+  sourceHeight: number;
+  pageWidth: number;
+  pageHeight: number;
 }
 
 export interface GradingSession {
