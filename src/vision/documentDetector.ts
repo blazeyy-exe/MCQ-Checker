@@ -99,7 +99,7 @@ function detectWithOpenCV(cv: OpenCV, data: ImageData): Quad | null {
       const peri = cv.arcLength(cnt, true);
       const approx = new cv.Mat();
       cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
-      if (approx.rows === 4) {
+      if (approx.rows === 4 && cv.isContourConvex(approx)) {
         const area = Math.abs(cv.contourArea(approx));
         if (area > bestArea && area > imgArea * 0.16) {
           const pts: Point[] = [];
@@ -125,6 +125,17 @@ function detectWithOpenCV(cv: OpenCV, data: ImageData): Quad | null {
     hierarchy.delete();
     kernel.delete();
   }
+}
+
+function staysInsideFrame(quad: Quad, width: number, height: number): boolean {
+  const margin = Math.max(2, Math.min(width, height) * 0.012);
+  return [quad.tl, quad.tr, quad.br, quad.bl].every(
+    (point) =>
+      point.x >= margin &&
+      point.y >= margin &&
+      point.x <= width - margin &&
+      point.y <= height - margin,
+  );
 }
 
 export function detectDocument(data: ImageData, cv?: OpenCV | null): PaperDetection {
@@ -162,6 +173,22 @@ export function detectDocument(data: ImageData, cv?: OpenCV | null): PaperDetect
           [...approx].sort((a, b) => a.x - b.x + (a.y - b.y))[0],
         ];
         quad = orderCorners(byCorner);
+      } else if (blob.length > 0) {
+        const bounds = blob.reduce(
+          (rect, point) => ({
+            left: Math.min(rect.left, point.x),
+            top: Math.min(rect.top, point.y),
+            right: Math.max(rect.right, point.x),
+            bottom: Math.max(rect.bottom, point.y),
+          }),
+          { left: data.width, top: data.height, right: 0, bottom: 0 },
+        );
+        quad = {
+          tl: { x: bounds.left, y: bounds.top },
+          tr: { x: bounds.right, y: bounds.top },
+          br: { x: bounds.right, y: bounds.bottom },
+          bl: { x: bounds.left, y: bounds.bottom },
+        };
       }
     }
   }
@@ -176,13 +203,16 @@ export function detectDocument(data: ImageData, cv?: OpenCV | null): PaperDetect
   }
 
   const coverage = quadArea(quad) / imgArea;
+  const withinFrame = staysInsideFrame(quad, data.width, data.height);
   let message = "Paper detected.";
   if (coverage < 0.28) message = "Move the paper closer.";
   else if (coverage > 0.98) message = "Keep the entire paper inside the frame.";
+  else if (!withinFrame) message = "Show the paper edges with a visible margin around the page.";
   else if (sharpness < 18) message = "Hold steady — the image is a little blurry.";
+  const found = coverage >= 0.18 && coverage <= 0.98 && withinFrame && sharpness >= 8;
 
   return {
-    found: coverage >= 0.18,
+    found,
     quad,
     coverage,
     sharpness,

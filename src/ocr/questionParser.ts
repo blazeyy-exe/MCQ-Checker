@@ -1,7 +1,11 @@
 import type { DetectedQuestion, OptionLabel, Rect } from "../types";
 import { OPTION_LABELS } from "../types";
 import { inflateRect, unionRect } from "../lib/geometry";
-import { classifyQuestionMarks, detectMarksForRegions } from "../vision/markDetector";
+import {
+  classifyQuestionMarks,
+  detectMarksForRegions,
+  SELECTED_CIRCLE_THRESHOLD,
+} from "../vision/markDetector";
 
 export interface OcrWord {
   text: string;
@@ -13,6 +17,20 @@ export interface OcrLine {
   text: string;
   words: OcrWord[];
   bbox: Rect;
+}
+
+export interface ParsedOptionRegion {
+  label: OptionLabel;
+  text: string;
+  labelBox: Rect;
+  box: Rect;
+}
+
+export interface ParsedQuestionRegion {
+  number: number;
+  questionText?: string;
+  box: Rect;
+  optionRegions: ParsedOptionRegion[];
 }
 
 const QUESTION_RE = /^(\d{1,3})(?:[\.\)\:]|\/)/;
@@ -59,8 +77,8 @@ function splitColumns(lines: OcrLine[], pageWidth: number): OcrLine[][] {
   return [lines];
 }
 
-function parseOptionsFromLine(line: OcrLine): Array<{ label: OptionLabel; box: Rect; text: string }> {
-  const found: Array<{ label: OptionLabel; box: Rect; text: string }> = [];
+function parseOptionsFromLine(line: OcrLine): ParsedOptionRegion[] {
+  const found: ParsedOptionRegion[] = [];
   const indexes: Array<{ label: OptionLabel; wordIndex: number }> = [];
   line.words.forEach((word, i) => {
     const match = word.text.trim().match(/^[\(\[]?([A-Da-d])[\)\]\.\:\-]?$/);
@@ -71,21 +89,44 @@ function parseOptionsFromLine(line: OcrLine): Array<{ label: OptionLabel; box: R
       const start = indexes[i].wordIndex;
       const end = i + 1 < indexes.length ? indexes[i + 1].wordIndex : line.words.length;
       const slice = line.words.slice(start, end);
-      const first = slice[0];
+      const body = slice.slice(1);
+      const labelBox = slice[0].bbox;
       found.push({
         label: indexes[i].label,
-        text: slice.map((w) => w.text).join(" "),
-        box: slice.slice(1).reduce<Rect>((acc, w) => unionRect(acc, w.bbox), first.bbox),
+        text: body.map((w) => w.text).join(" "),
+        labelBox,
+        box: body.length
+          ? body.slice(1).reduce<Rect>((acc, w) => unionRect(acc, w.bbox), body[0].bbox)
+          : labelBox,
       });
     }
     return found;
   }
+
+  if (indexes.length === 1 && indexes[0].wordIndex === 0) {
+    const body = line.words.slice(1);
+    const labelBox = line.words[0].bbox;
+    return [{
+      label: indexes[0].label,
+      text: body.map((word) => word.text).join(" "),
+      labelBox,
+      box: body.length
+        ? body.slice(1).reduce<Rect>((acc, word) => unionRect(acc, word.bbox), body[0].bbox)
+        : labelBox,
+    }];
+  }
+
   const m = line.text.trim().match(OPTION_RE);
-  if (m && OPTION_LABELS.includes(m[1].toUpperCase() as OptionLabel)) {
+  if (m && line.words.length > 0 && OPTION_LABELS.includes(m[1].toUpperCase() as OptionLabel)) {
+    const body = line.words.slice(1);
+    const labelBox = line.words[0].bbox;
     found.push({
       label: m[1].toUpperCase() as OptionLabel,
-      text: line.text,
-      box: line.bbox,
+      text: body.map((word) => word.text).join(" ") || m[2],
+      labelBox,
+      box: body.length
+        ? body.slice(1).reduce<Rect>((acc, word) => unionRect(acc, word.bbox), body[0].bbox)
+        : labelBox,
     });
   }
   return found;
@@ -95,22 +136,13 @@ export function parseQuestionsFromLines(
   lines: OcrLine[],
   pageWidth: number,
   pageHeight: number,
-): Array<{
-  number: number;
-  questionText?: string;
-  box: Rect;
-  optionRegions: Array<{ label: OptionLabel; box: Rect }>;
-}> {
+): ParsedQuestionRegion[] {
   const columns = splitColumns(lines, pageWidth);
-  const questions: Array<{
-    number: number;
-    questionText?: string;
-    box: Rect;
-    optionRegions: Array<{ label: OptionLabel; box: Rect }>;
-  }> = [];
+  const questions: ParsedQuestionRegion[] = [];
 
   for (const col of columns) {
     let current: (typeof questions)[number] | null = null;
+    let lastOption: ParsedOptionRegion | null = null;
     for (const line of col) {
       const trimmed = line.text.trim();
       const qMatch = trimmed.match(QUESTION_RE);
@@ -124,6 +156,7 @@ export function parseQuestionsFromLines(
             optionRegions: [],
           };
           questions.push(current);
+          lastOption = null;
         }
       }
       const optionBits = parseOptionsFromLine(line);
@@ -131,13 +164,27 @@ export function parseQuestionsFromLines(
         current.box = unionRect(current.box, line.bbox);
         for (const bit of optionBits) {
           const existing = current.optionRegions.find((o) => o.label === bit.label);
-          if (existing) existing.box = unionRect(existing.box, bit.box);
-          else current.optionRegions.push({ label: bit.label, box: bit.box });
+          if (existing) {
+            existing.box = unionRect(existing.box, bit.box);
+            existing.labelBox = unionRect(existing.labelBox, bit.labelBox);
+            existing.text = [existing.text, bit.text].filter(Boolean).join(" ");
+            lastOption = existing;
+          } else {
+            current.optionRegions.push(bit);
+            lastOption = bit;
+          }
         }
       } else if (current && !qMatch) {
         current.box = unionRect(current.box, line.bbox);
-        if (current.questionText && current.questionText.length < 180) {
-          current.questionText = `${current.questionText} ${trimmed}`.trim();
+        const continuesOption =
+          lastOption !== null &&
+          line.bbox.y <= lastOption.box.y + lastOption.box.height + line.bbox.height * 1.5 &&
+          line.bbox.x >= lastOption.box.x - line.bbox.height;
+        if (continuesOption && lastOption) {
+          lastOption.box = unionRect(lastOption.box, line.bbox);
+          lastOption.text = [lastOption.text, line.text].filter(Boolean).join(" ");
+        } else if (current.optionRegions.length === 0 && (current.questionText?.length ?? 0) < 180) {
+          current.questionText = `${current.questionText ?? ""} ${trimmed}`.trim();
         }
       }
     }
@@ -148,32 +195,36 @@ export function parseQuestionsFromLines(
     box: inflateRect(q.box, 4, 3),
     optionRegions: q.optionRegions.map((o) => ({
       ...o,
+      labelBox: inflateRect(o.labelBox, 3, 3),
       box: inflateRect(o.box, Math.min(18, pageWidth * 0.012), Math.min(10, pageHeight * 0.008)),
     })),
   }));
 }
 
 export function attachMarks(
-  parsed: Array<{
-    number: number;
-    questionText?: string;
-    box: Rect;
-    optionRegions: Array<{ label: OptionLabel; box: Rect }>;
-  }>,
+  parsed: ParsedQuestionRegion[],
   gray: Uint8Array,
   width: number,
   height: number,
 ): DetectedQuestion[] {
   return parsed.map((q) => {
-    const filled = OPTION_LABELS.map((label) => {
-      const region = q.optionRegions.find((o) => o.label === label);
-      return region ?? { label, box: { x: q.box.x, y: q.box.y, width: 8, height: 8 } };
-    });
-    const options = detectMarksForRegions(gray, width, height, filled);
-    const { selected, status } = classifyQuestionMarks(options);
+    const options = detectMarksForRegions(gray, width, height, q.optionRegions);
+    const recognizedOptions = q.optionRegions.map((region) => region.label);
+    const reasons: string[] = [];
+    if (
+      recognizedOptions.length !== OPTION_LABELS.length ||
+      OPTION_LABELS.some((label) => !recognizedOptions.includes(label))
+    ) {
+      reasons.push("Could not confidently locate all four option labels.");
+    }
+    const classified = classifyQuestionMarks(options);
+    const selected = classified.selected;
+    const status = reasons.length > 0 ? "uncertain" : classified.status;
+    if (classified.status === "uncertain") reasons.push("Circle evidence is ambiguous.");
+    if (classified.status === "multiple") reasons.push("More than one option appears to be circled.");
     const top = Math.max(...options.map((o) => o.markScore), 0);
     const confidence =
-      status === "selected" && top > 0.16 ? "high" : status === "unanswered" ? "medium" : "low";
+      status === "selected" && top > SELECTED_CIRCLE_THRESHOLD ? "high" : status === "unanswered" ? "medium" : "low";
     return {
       number: q.number,
       questionText: q.questionText,
@@ -182,6 +233,8 @@ export function attachMarks(
       selected,
       status,
       confidence,
+      recognizedOptions,
+      uncertaintyReasons: reasons,
     };
   });
 }

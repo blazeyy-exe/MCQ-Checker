@@ -5,7 +5,7 @@ let workerPromise: Promise<Worker> | null = null;
 
 export async function getOcrWorker(): Promise<Worker> {
   if (!workerPromise) {
-    workerPromise = (async () => {
+    const pending = (async () => {
       const worker = await createWorker("eng", 1, {
         workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",
         corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1/tesseract-core.wasm.js",
@@ -17,6 +17,10 @@ export async function getOcrWorker(): Promise<Worker> {
       });
       return worker;
     })();
+    workerPromise = pending.catch((error: unknown) => {
+      workerPromise = null;
+      throw error;
+    });
   }
   return workerPromise;
 }

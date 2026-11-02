@@ -26,7 +26,7 @@ export function layoutFromQuestions(
       questionBox: absToRel(q.box, pageWidth, pageHeight),
       options: q.options.map((o) => ({
         label: o.label,
-        box: absToRel(o.box, pageWidth, pageHeight),
+        box: absToRel(o.labelBox ?? o.box, pageWidth, pageHeight),
       })),
     })),
   };

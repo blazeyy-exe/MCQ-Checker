@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { TopBrand } from "../components/UI/AppShell";
 import { generateTestPaper, type SyntheticPaper } from "../lab/testPaper";
 import { recognizeStudentPaper } from "../grading/studentPaperEngine";
@@ -32,7 +33,7 @@ export function LabPage() {
     if (!paper) return;
     setBusy(true);
     try {
-      const recognition = await recognizeStudentPaper({ source: paper.canvas, assumeFullFrame: true });
+      const recognition = await recognizeStudentPaper({ source: paper.canvas, allowFullFrame: true });
       const key = createManualKey({
         name: "Lab exam",
         subject: "Science",
@@ -66,6 +67,9 @@ export function LabPage() {
       <p className="mt-2 max-w-2xl text-ink/65">
         These generated papers have known answers. Use them to see where detection succeeds or needs layout confirmation. Figures here are from the run you just performed, not claimed product accuracy.
       </p>
+      <Link to="/lab/debug" className="mt-4 inline-block rounded-full border border-rule px-4 py-2 text-sm">
+        Open real-paper recognition debug and evaluation
+      </Link>
       <div className="mt-5 flex flex-wrap gap-2">
         <button className="rounded-full bg-ink px-4 py-2 text-paper" onClick={() => make("circle", "single")}>
           Circled, one column

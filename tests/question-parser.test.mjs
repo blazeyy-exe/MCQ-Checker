@@ -33,10 +33,13 @@ test("attaches a clear marked option to the corresponding question region", () =
   const width = 800;
   const height = 500;
   const gray = new Uint8Array(width * height).fill(255);
-  const marked = parsed[0].optionRegions[1].box;
-  for (let y = Math.round(marked.y + marked.height * 0.2); y < Math.round(marked.y + marked.height * 0.8); y++) {
-    for (let x = Math.round(marked.x + marked.width * 0.2); x < Math.round(marked.x + marked.width * 0.8); x++) {
-      gray[y * width + x] = 15;
+  const marked = parsed[0].optionRegions[1].labelBox;
+  const radius = Math.max(marked.width * 0.75, marked.height * 0.7, 6) * 1.1;
+  for (let angle = 0; angle < Math.PI * 2; angle += 0.01) {
+    const centerX = Math.round(marked.x + marked.width / 2 + Math.cos(angle) * radius);
+    const centerY = Math.round(marked.y + marked.height / 2 + Math.sin(angle) * radius);
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) gray[(centerY + dy) * width + centerX + dx] = 15;
     }
   }
 

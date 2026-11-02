@@ -79,7 +79,6 @@ export function ScannerPage() {
         sessionId: session.id,
         layout,
         studentLabel,
-        assumeFullFrame: true,
       });
       navigate(`/results/${result.id}`);
     } finally {

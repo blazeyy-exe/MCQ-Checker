@@ -43,7 +43,7 @@ export async function extractAnswerKeyFromFile(file: File): Promise<{
     canvas = c;
   }
 
-  const recognition = await recognizeStudentPaper({ source: canvas, assumeFullFrame: true });
+  const recognition = await recognizeStudentPaper({ source: canvas });
   const items: AnswerKeyItem[] = recognition.questions
     .sort((a, b) => a.number - b.number)
     .map((q) => {

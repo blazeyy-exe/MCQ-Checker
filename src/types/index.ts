@@ -101,11 +101,15 @@ export interface PaperLayout {
 
 export interface DetectedOption {
   label: OptionLabel;
+  text?: string;
+  labelBox?: Rect;
   box: Rect;
   markScore: number;
   ringInk: number;
   interiorInk: number;
   gutterInk: number;
+  circleCoverage?: number;
+  uncertaintyReason?: string;
 }
 
 export interface DetectedQuestion {
@@ -116,6 +120,8 @@ export interface DetectedQuestion {
   selected: OptionLabel[];
   status: DetectionStatus;
   confidence: ConfidenceLevel;
+  recognizedOptions?: OptionLabel[];
+  uncertaintyReasons?: string[];
 }
 
 export interface StudentPaperRecognition {
@@ -123,12 +129,23 @@ export interface StudentPaperRecognition {
   ocrText: string;
   processingMs: number;
   warnings: string[];
+  issues: RecognitionIssue[];
+  sourceDataUrl: string;
   warpedDataUrl: string;
   originalDataUrl: string;
+  ocrWords: Array<{ text: string; confidence: number; bbox: Rect }>;
+  sourceWidth: number;
+  sourceHeight: number;
   pageWidth: number;
   pageHeight: number;
   usedLayout: boolean;
   paperQuad?: Quad;
+}
+
+export interface RecognitionIssue {
+  code: "no_questions" | "incomplete_options" | "ambiguous_mark" | "unconfirmed_layout";
+  message: string;
+  questionNumber?: number;
 }
 
 export interface GradedQuestion {
@@ -174,10 +191,23 @@ export interface GradingResult {
 }
 
 export interface RecognitionDebug {
+  sourceDataUrl: string;
   warpedDataUrl: string;
   ocrText: string;
+  ocrWords: Array<{ text: string; confidence: number; bbox: Rect }>;
   questionBoxes: Array<{ number: number; box: Rect }>;
-  optionBoxes: Array<{ number: number; label: OptionLabel; box: Rect; markScore: number }>;
+  optionBoxes: Array<{
+    number: number;
+    label: OptionLabel;
+    text?: string;
+    labelBox?: Rect;
+    box: Rect;
+    markScore: number;
+    circleCoverage?: number;
+    uncertaintyReason?: string;
+  }>;
+  questions: DetectedQuestion[];
+  issues: RecognitionIssue[];
   timings: Record<string, number>;
 }
 

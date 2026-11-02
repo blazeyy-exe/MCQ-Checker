@@ -25,6 +25,7 @@ export function useScanner({ videoRef, enabled, autoScan, key, sessionId, layout
   const [busy, setBusy] = useState(false);
   const [lastResult, setLastResult] = useState<GradingResult | null>(null);
   const stableRef = useRef<{ quad: Quad | null; since: number }>({ quad: null, since: 0 });
+  const lastPreviewInspectRef = useRef(0);
   const lastHashRef = useRef<string>("");
   const paperPresentRef = useRef(false);
   const runningRef = useRef(false);
@@ -52,7 +53,6 @@ export function useScanner({ videoRef, enabled, autoScan, key, sessionId, layout
         key,
         sessionId,
         layout,
-        assumeFullFrame: true,
       });
       lastHashRef.current = hash;
       setLastResult(result);
@@ -86,6 +86,9 @@ export function useScanner({ videoRef, enabled, autoScan, key, sessionId, layout
       const currentPhase = phaseRef.current;
       if (!video?.videoWidth) return;
       if (runningRef.current || currentPhase === "graded" || currentPhase === "scanning") return;
+      const now = performance.now();
+      if (now - lastPreviewInspectRef.current < 120) return;
+      lastPreviewInspectRef.current = now;
       const frame = videoFrameToCanvas(video, 360);
       const data = canvasToImageData(frame);
       const detection = detectDocument(data, cv);
@@ -102,7 +105,6 @@ export function useScanner({ videoRef, enabled, autoScan, key, sessionId, layout
       setQuad(detection.quad);
       const prev = stableRef.current.quad;
       const delta = prev ? meanQuadDelta(prev, detection.quad) : 999;
-      const now = performance.now();
       if (delta < 7) {
         if (!stableRef.current.since) stableRef.current.since = now;
       } else {

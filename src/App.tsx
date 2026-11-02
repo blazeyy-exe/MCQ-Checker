@@ -7,6 +7,7 @@ import { ResultsPage } from "./pages/ResultsPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { LabPage } from "./pages/LabPage";
+import { RecognitionDebugPage } from "./pages/RecognitionDebugPage";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/review/:resultId" element={<ReviewPage />} />
         <Route path="/lab" element={<LabPage />} />
+        <Route path="/lab/debug" element={<RecognitionDebugPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

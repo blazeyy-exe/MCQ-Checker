@@ -13,7 +13,6 @@ export async function gradePaperSource(input: {
   sessionId: string;
   layout?: PaperLayout | null;
   studentLabel?: string;
-  assumeFullFrame?: boolean;
 }): Promise<GradingResult> {
   if (!isAnswerKeyComplete(input.key)) {
     throw new Error("Confirm every answer in the answer key before grading.");
@@ -21,8 +20,10 @@ export async function gradePaperSource(input: {
   const recognition = await recognizeStudentPaper({
     source: input.source,
     layout: input.layout,
-    assumeFullFrame: input.assumeFullFrame ?? true,
   });
+  if (!recognition.questions.length) {
+    throw new Error("No questions could be recognized. Review the paper or confirm its layout before grading.");
+  }
   const questions = matchQuestions(input.key, recognition.questions);
   const annotatedDataUrl = await renderAnnotatedPaper(recognition.warpedDataUrl, questions);
   const result = buildResult({
